@@ -1,0 +1,10 @@
+{
+  "common": {
+    "appName": "Little Moment",
+    "welcome": "Momentinho Magico"
+  },
+  "auth": {
+    "loginTitle": "Entrar",
+    "registerTitle": "Criar conta"
+  }
+}
