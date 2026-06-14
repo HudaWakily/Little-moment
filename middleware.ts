@@ -1,10 +1,5 @@
-import createIntlMiddleware from "next-intl/middleware";
 import { NextResponse, type NextRequest } from "next/server";
-
-import { routing } from "./i18n/routing";
 import { updateSession } from "./lib/supabase/middleware";
-
-const intlMiddleware = createIntlMiddleware(routing);
 
 const protectedRoutes = ["/create/story", "/create/album"];
 const authRoutes = ["/login", "/register"];
@@ -30,13 +25,12 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(homeUrl);
   }
 
-  const intlResponse = intlMiddleware(request);
-
+  const response = NextResponse.next();
   supabaseResponse.cookies.getAll().forEach((cookie) => {
-    intlResponse.cookies.set(cookie.name, cookie.value);
+    response.cookies.set(cookie.name, cookie.value);
   });
 
-  return intlResponse;
+  return response;
 }
 
 export const config = {
