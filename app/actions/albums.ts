@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { uploadUserFile } from "@/lib/supabase/storage";
+import type { Database } from "@/types";
 
 export type CreateAlbumState = {
   success: boolean;
@@ -105,14 +106,14 @@ export async function createAlbumAction(
 
   const { data: album, error: albumError } = await supabase
     .from("albums")
-    .insert({
+    .insert(({
       user_id: user.id,
       title,
       album_type: albumType,
       theme_id: themeId,
       layout_id: layoutId,
       status: "processing",
-    })
+    }) as any)
     .select("id")
     .single();
 
@@ -120,13 +121,15 @@ export async function createAlbumAction(
     return { success: false, error: albumError?.message ?? "Failed to create album." };
   }
 
+  const albumId = (album as any).id;
+
   const { error: photosError } = await supabase.from("album_photos").insert(
-    uploadedPhotos.map((photo) => ({
-      album_id: album.id,
+    (uploadedPhotos.map((photo) => ({
+      album_id: albumId,
       image_url: photo.image_url,
       caption: photo.caption,
       sort_order: photo.sort_order,
-    })),
+    })) as any),
   );
 
   if (photosError) {
@@ -135,5 +138,5 @@ export async function createAlbumAction(
 
   revalidatePath("/create/album");
 
-  return { success: true, albumId: album.id };
+  return { success: true, albumId: albumId };
 }

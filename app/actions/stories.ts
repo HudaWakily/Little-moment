@@ -69,14 +69,14 @@ export async function createStoryAction(
 
   const { data, error } = await supabase
     .from("story_books")
-    .insert({
+    .insert(({
       user_id: user.id,
       child_name: childName,
       child_age: childAge,
       theme_id: themeId,
       photo_url: photoUrl,
       status: "processing",
-    })
+    }) as any)
     .select("id")
     .single();
 
@@ -86,5 +86,7 @@ export async function createStoryAction(
 
   revalidatePath("/create/story");
 
-  return { success: true, storyId: data.id };
+  const storyId = (data as any).id;
+
+  return { success: true, storyId };
 }

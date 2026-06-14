@@ -33,7 +33,7 @@ function mapRow(row: ThemeRow): DbTheme {
     title: row.title,
     description: row.description,
     imageUrl: row.image_url,
-    metadata: row.metadata as DbTheme["metadata"],
+    metadata: row.metadata as unknown as DbTheme["metadata"],
     sortOrder: row.sort_order,
     isActive: row.is_active,
     createdAt: row.created_at,
