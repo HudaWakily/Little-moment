@@ -20,11 +20,8 @@ export default function LoginPage() {
       description="Acesse sua conta para continuar criando momentos mágicos."
       footer={
         <p className="text-muted-foreground">
-          Não tem conta?{" "}
-          <Link
-            href="/register"
-            className="font-semibold text-primary hover:underline"
-          >
+          Não tem conta? {" "}
+          <Link href="/register" className="font-semibold text-primary hover:underline">
             Criar conta
           </Link>
         </p>

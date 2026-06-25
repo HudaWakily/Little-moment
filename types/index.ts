@@ -1,5 +1,14 @@
 export type Theme = "light" | "dark" | "system";
 
+export interface UserProfileRow {
+  id: string;
+  full_name: string;
+  email: string;
+  avatar_url?: string | null;
+  created_at: string;
+  updated_at?: string | null;
+}
+
 export interface UserProfile {
   id: string;
   fullName: string;
@@ -95,9 +104,9 @@ export interface Database {
   public: {
     Tables: {
       user_profiles: SupabaseTable<
-        UserProfile,
-        Omit<UserProfile, "id" | "createdAt" | "updatedAt"> & { id?: string },
-        Partial<Omit<UserProfile, "id" | "createdAt">>
+        UserProfileRow,
+        Omit<UserProfileRow, "id" | "created_at" | "updated_at"> & { id?: string },
+        Partial<Omit<UserProfileRow, "id" | "created_at">>
       >;
       books: SupabaseTable<
         Book,

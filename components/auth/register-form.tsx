@@ -5,17 +5,23 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Loader2, Lock, Mail, User } from "lucide-react";
 import { toast } from "sonner";
 
+import { finalizeAuthSession } from "@/app/actions/auth";
 import { GoogleSignInButton } from "@/components/auth/google-sign-in-button";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { getAuthErrorMessage } from "@/lib/auth/errors";
+import { getAuthErrorMessage, normalizeAuthEmail } from "@/lib/auth/errors";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+
+function normalizeRedirect(path: string) {
+  if (path === "/criar") return "/create/story";
+  return path.startsWith("/") ? path : "/";
+}
 
 export function RegisterForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectTo = searchParams.get("redirectTo") ?? "/";
+  const redirectTo = normalizeRedirect(searchParams.get("redirectTo") ?? "/");
 
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -40,8 +46,10 @@ export function RegisterForm() {
 
     try {
       const supabase = createSupabaseBrowserClient();
+      const normalizedEmail = normalizeAuthEmail(email);
+
       const { data, error } = await supabase.auth.signUp({
-        email: email.trim(),
+        email: normalizedEmail,
         password,
         options: {
           data: {
@@ -56,17 +64,32 @@ export function RegisterForm() {
         return;
       }
 
+      if (data.user?.identities?.length === 0) {
+        toast.error(
+          "Este e-mail já está cadastrado. Faça login ou confirme seu e-mail se ainda não confirmou.",
+        );
+        router.push(`/login?redirectTo=${encodeURIComponent(redirectTo)}&confirmEmail=1`);
+        return;
+      }
+
       if (data.session) {
+        try {
+          await finalizeAuthSession();
+        } catch {
+          // Profile sync is best-effort; session is already in the browser.
+        }
+
         toast.success("Conta criada com sucesso! Bem-vindo ao Little Moment.");
-        router.push(redirectTo);
-        router.refresh();
+        window.location.href = redirectTo;
         return;
       }
 
       toast.success(
-        "Conta criada! Verifique seu e-mail para confirmar o cadastro.",
+        "Conta criada! Enviamos um e-mail de confirmação — clique no link antes de entrar.",
       );
-      router.push("/login");
+      router.push(
+        `/login?redirectTo=${encodeURIComponent(redirectTo)}&confirmEmail=1&email=${encodeURIComponent(normalizedEmail)}`,
+      );
     } catch (error) {
       toast.error(getAuthErrorMessage(error));
     } finally {
@@ -100,6 +123,7 @@ export function RegisterForm() {
               value={fullName}
               onChange={(event) => setFullName(event.target.value)}
               required
+              disabled={isLoading}
               className="h-12 rounded-xl border-2 pl-10"
             />
           </div>
@@ -117,6 +141,7 @@ export function RegisterForm() {
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               required
+              disabled={isLoading}
               className="h-12 rounded-xl border-2 pl-10"
             />
           </div>
@@ -135,6 +160,7 @@ export function RegisterForm() {
               onChange={(event) => setPassword(event.target.value)}
               required
               minLength={6}
+              disabled={isLoading}
               className="h-12 rounded-xl border-2 pl-10"
             />
           </div>
@@ -153,6 +179,7 @@ export function RegisterForm() {
               onChange={(event) => setConfirmPassword(event.target.value)}
               required
               minLength={6}
+              disabled={isLoading}
               className="h-12 rounded-xl border-2 pl-10"
             />
           </div>

@@ -15,7 +15,7 @@ export default async function ProtectedLayout({ children }: ProtectedLayoutProps
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect("/login");
+    redirect("/login?redirectTo=/create/story");
   }
 
   return (

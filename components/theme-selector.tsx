@@ -14,6 +14,13 @@ type ThemeSelectorProps = {
   selectedTheme: string | null;
   onSelectTheme: (themeId: string) => void;
   isLoading?: boolean;
+  columns?: 2 | 3 | 4;
+};
+
+const COLUMN_CLASSES: Record<2 | 3 | 4, string> = {
+  2: "sm:grid-cols-2 lg:grid-cols-2",
+  3: "sm:grid-cols-2 lg:grid-cols-3",
+  4: "sm:grid-cols-2 lg:grid-cols-4",
 };
 
 export function ThemeSelector({
@@ -21,13 +28,14 @@ export function ThemeSelector({
   selectedTheme,
   onSelectTheme,
   isLoading = false,
+  columns = 4,
 }: ThemeSelectorProps) {
   if (isLoading) {
     return (
       <div className="flex min-h-[200px] items-center justify-center rounded-2xl border border-dashed border-border bg-secondary/30">
         <div className="flex flex-col items-center gap-3 text-muted-foreground">
           <Loader2 className="size-8 animate-spin text-primary" />
-          <p className="text-sm font-medium">Loading themes...</p>
+          <p className="text-sm font-medium">Carregando temas...</p>
         </div>
       </div>
     );
@@ -36,16 +44,22 @@ export function ThemeSelector({
   if (!themes.length) {
     return (
       <p className="rounded-xl border border-border bg-secondary/50 p-6 text-center text-sm text-muted-foreground">
-        No themes available right now. Please try again later.
+        Nenhum tema disponível no momento. Tente novamente mais tarde.
       </p>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4">
+    <div
+      className={cn(
+        "grid grid-cols-1 gap-4 sm:gap-6",
+        COLUMN_CLASSES[columns],
+      )}
+    >
       {themes.map((theme) => {
         const IconComponent = getThemeIcon(theme.iconKey);
         const isSelected = selectedTheme === theme.id;
+        const hasImage = Boolean(theme.image);
 
         return (
           <button
@@ -53,23 +67,32 @@ export function ThemeSelector({
             type="button"
             onClick={() => onSelectTheme(theme.id)}
             className={cn(
-              "group relative overflow-hidden rounded-2xl text-left transition-all duration-300",
+              "group relative min-h-[180px] overflow-hidden rounded-2xl text-left transition-all duration-300",
               "hover:scale-[1.02] hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
               isSelected && "scale-[1.02] shadow-xl ring-4 ring-primary ring-offset-2",
             )}
           >
-            <Image
-              src={theme.image}
-              alt={theme.title}
-              fill
-              className="object-cover"
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-            />
+            {hasImage ? (
+              <Image
+                src={theme.image}
+                alt={theme.title}
+                fill
+                className="object-cover"
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+              />
+            ) : (
+              <div
+                className={cn(
+                  "absolute inset-0 bg-gradient-to-br",
+                  theme.color,
+                )}
+              />
+            )}
 
             <div
               className={cn(
                 "absolute inset-0 bg-gradient-to-br transition-opacity duration-300",
-                theme.color,
+                hasImage ? theme.color : "from-black/10 to-black/30",
                 isSelected ? "opacity-60" : "opacity-50 group-hover:opacity-60",
               )}
             />

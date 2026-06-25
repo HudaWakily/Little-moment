@@ -2,6 +2,7 @@ import {
   Bird,
   Crown,
   Flame,
+  Gift,
   Music,
   Shield,
   Sparkles,
@@ -19,6 +20,7 @@ const ICON_MAP: Record<string, LucideIcon> = {
   bird: Bird,
   music: Music,
   shield: Shield,
+  gift: Gift,
 };
 
 export function getThemeIcon(iconKey: string): LucideIcon {

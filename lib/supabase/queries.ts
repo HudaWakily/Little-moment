@@ -1,8 +1,8 @@
 import { createClient } from "@supabase/supabase-js";
+import { getSupabaseEnv } from "@/lib/supabase/env";
 import { DbTheme, ThemeKind } from "@/types/themes";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const { supabaseUrl, supabaseAnonKey } = getSupabaseEnv();
 
 if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error("Missing Supabase environment variables");
